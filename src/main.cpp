@@ -1,10 +1,25 @@
+// This file is based on
+//  LVGL/examples/arduino/LVGL_Ardino/LVGL_Arduino.ino
+//  and some template files of LVGL library.
+//  You can use this code under the original license of LVGL;
+// MIT licence
+// Copyright (c) 2021 LVGL Kft
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include <M5Core2.h>
 #define LGFX_AUTODETECT
 #define LGFX_USE_V1
 #include <LovyanGFX.hpp>
 
 #include <lvgl.h>
-#include <lv_conf.h>
+#include <examples/get_started/lv_example_get_started.h>
+#include <examples/get_started/lv_example_get_started_1.c>
+#include <examples/get_started/lv_example_get_started_2.c>
+#include <examples/get_started/lv_example_get_started_3.c>
+
+// copied from examples/porting/lv_port_disp_template.{h,c}
 
 /*********************
  *      DEFINES
@@ -31,7 +46,6 @@ static const int32_t MY_DISP_HOR_RES = 320;
 static const int32_t MY_DISP_VER_RES = 240;
 
 static LGFX lcd;
-static LGFX_Sprite sprite(&lcd);
 
 /**********************
  *      MACROS
@@ -100,8 +114,8 @@ void lv_port_disp_init(void)
     /*Set up the functions to access to your display*/
 
     /*Set the resolution of the display*/
-    disp_drv.hor_res = 320;
-    disp_drv.ver_res = 240;
+    disp_drv.hor_res = MY_DISP_HOR_RES;
+    disp_drv.ver_res = MY_DISP_VER_RES;
 
     /*Used to copy the buffer's content to the display*/
     disp_drv.flush_cb = disp_flush;
@@ -139,18 +153,6 @@ static void disp_init(void)
  *'lv_disp_flush_ready()' has to be called when finished.*/
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
-    /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-
-    // int32_t x;
-    // int32_t y;
-    // for(y = area->y1; y <= area->y2; y++) {
-    //     for(x = area->x1; x <= area->x2; x++) {
-    //         /*Put a pixel to the display. For example:*/
-    //         /*put_px(x, y, *color_p)*/
-    //         color_p++;
-    //     }
-    // }
-
     int32_t width = area->x2 - area->x1 + 1;
     int32_t height = area->y2 - area->y1 + 1;
     lcd.setAddrWindow(area->x1, area->y1,
@@ -181,18 +183,14 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 //}
 
 
+// copied from examples/porting/lv_port_indev_template.{h,c}
+
 static void touchpad_init(void);
 static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
 static bool touchpad_is_pressed(void);
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y);
 
-static void button_init(void);
-static void button_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
-static int8_t button_get_pressed_id(void);
-static bool button_is_pressed(uint8_t id);
-
 lv_indev_t * indev_touchpad;
-lv_indev_t * indev_button;
 
 void lv_port_indev_init(void)
 {
@@ -222,26 +220,6 @@ void lv_port_indev_init(void)
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = touchpad_read;
     indev_touchpad = lv_indev_drv_register(&indev_drv);
-
-    // /*------------------
-    //  * Button
-    //  * -----------------*/
-
-    // /*Initialize your button if you have*/
-    // button_init();
-
-    // /*Register a button input device*/
-    // lv_indev_drv_init(&indev_drv);
-    // indev_drv.type = LV_INDEV_TYPE_BUTTON;
-    // indev_drv.read_cb = button_read;
-    // indev_button = lv_indev_drv_register(&indev_drv);
-
-    // /*Assign buttons to points on the screen*/
-    // static const lv_point_t btn_points[2] = {
-    //         {10, 10},   /*Button 0 -> x:10; y:10*/
-    //         {40, 100},  /*Button 1 -> x:40; y:100*/
-    // };
-    // lv_indev_set_button_points(indev_button, btn_points);
 }
 
 
@@ -293,93 +271,6 @@ static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
     (*x) = coordinate.x;
     (*y) = coordinate.y;
 }
-
-/*------------------
- * Button
- * -----------------*/
-
-/*Initialize your buttons*/
-static void button_init(void)
-{
-    /*Your code comes here*/
-}
-
-/*Will be called by the library to read the button*/
-static void button_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
-{
-
-    static uint8_t last_btn = 0;
-
-    /*Get the pressed button's ID*/
-    int8_t btn_act = button_get_pressed_id();
-
-    if(btn_act >= 0) {
-        data->state = LV_INDEV_STATE_PR;
-        last_btn = btn_act;
-    } else {
-        data->state = LV_INDEV_STATE_REL;
-    }
-
-    /*Save the last pressed button's ID*/
-    data->btn_id = last_btn;
-}
-
-/*Get ID  (0, 1, 2 ..) of the pressed button*/
-static int8_t button_get_pressed_id(void)
-{
-    uint8_t i;
-
-    /*Check to buttons see which is being pressed (assume there are 2 buttons)*/
-    for(i = 0; i < 2; i++) {
-        /*Return the pressed button's ID*/
-        if(button_is_pressed(i)) {
-            return i;
-        }
-    }
-
-    /*No button pressed*/
-    return -1;
-}
-
-/*Test if `id` button is pressed or not*/
-static bool button_is_pressed(uint8_t id)
-{
-
-    /*Your code comes here*/
-
-    return false;
-}
-
-static void btn_event_cb(lv_event_t * e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * btn = lv_event_get_target(e);
-    if(code == LV_EVENT_CLICKED) {
-        static uint8_t cnt = 0;
-        cnt++;
-
-        /*Get the first child of the button which is the label and change its text*/
-        lv_obj_t * label = lv_obj_get_child(btn, 0);
-        lv_label_set_text_fmt(label, "Button: %d", cnt);
-    }
-}
-
-/**
- * Create a button with a label and react on click event.
- */
-void lv_example_get_started_1(void)
-{
-    lv_obj_t * btn = lv_btn_create(lv_scr_act());     /*Add a button the current screen*/
-    lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
-    lv_obj_set_size(btn, 120, 50);                          /*Set its size*/
-    lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL, NULL);           /*Assign a callback to the button*/
-
-    lv_obj_t * label = lv_label_create(btn);          /*Add a label to the button*/
-    lv_label_set_text(label, "Button");                     /*Set the labels text*/
-    lv_obj_center(label);
-}
-
-
 
 
 /*This dummy typedef exists purely to silence -Wpedantic.*/
