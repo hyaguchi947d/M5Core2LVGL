@@ -6,7 +6,9 @@ https://platformio.org/
 
 ## 必要ライブラリ
 
-- LoveyanGFX
+以下のライブラリをプロジェクトに追加してください。
+
+- LovyanGFX
   - https://github.com/lovyan03/LovyanGFX
 - LVGL
   - https://lvgl.io/
