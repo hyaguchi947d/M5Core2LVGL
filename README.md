@@ -13,6 +13,13 @@ https://platformio.org/
 - LVGL
   - https://lvgl.io/
 
+## lv_conf.hについて
+
+`include/lv_conf_m5core2.h`を
+`libdeps/m5stack-core2/lvgl`
+に`lv_conf.h`として配置してください。
+
+
 ## ライセンスについて
 
 LVGLのサンプルを元に作成しています。
